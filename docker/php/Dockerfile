@@ -58,9 +58,11 @@ RUN docker-php-ext-configure pcntl --enable-pcntl &&docker-php-ext-install pcntl
 #     && docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql \
 #     && docker-php-ext-install pdo pdo_pgsql pgsql
 
-RUN useradd ifdancoder \
-  && usermod -u 1000 ifdancoder \
-  && groupmod -g 1000 ifdancoder \
-  && usermod -G www-data ifdancoder
+ARG USERNAME
+
+RUN useradd $USERNAME \
+  && usermod -u 1000 $USERNAME \
+  && groupmod -g 1000 $USERNAME \
+  && usermod -G www-data $USERNAME
   
-USER ifdancoder
+USER $USERNAME
