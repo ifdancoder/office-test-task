@@ -10,11 +10,12 @@ use Illuminate\Queue\SerializesModels;
 
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\ImportGoods;
-use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Queue\Middleware\WithoutOverlapping;
+use DateTime;
 
-class ProcessExcelFile implements ShouldQueue, ShouldBeUnique
+class ProcessExcelFile implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -30,9 +31,14 @@ class ProcessExcelFile implements ShouldQueue, ShouldBeUnique
         $this->filePath = $filePath;
     }
 
-    public function uniqueVia(): Repository
+    /**
+     * Get the middleware the job should pass through.
+     *
+     * @return array<int, object>
+     */
+    public function middleware(): array
     {
-        return Cache::driver('redis');
+        return [(new WithoutOverlapping(true))];
     }
 
     /**
@@ -41,5 +47,10 @@ class ProcessExcelFile implements ShouldQueue, ShouldBeUnique
     public function handle()
     {
         Excel::import(new ImportGoods, $this->filePath);
+    }
+
+    public function retryUntil(): DateTime
+    {
+        return now()->addMinutes(10);
     }
 }

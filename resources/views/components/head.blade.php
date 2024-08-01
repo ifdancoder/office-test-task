@@ -10,7 +10,7 @@
         }
 
         .expand-on-hover:hover {
-            font-size: 1.04em;
+            font-size: 1.003em;
             transform: scale(1.04);
             z-index: 99999999;
         }

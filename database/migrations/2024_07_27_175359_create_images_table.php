@@ -17,7 +17,6 @@ return new class extends Migration
             $table->string('link');
             $table->string('filename');
             $table->tinyInteger('order');
-            $table->unique(['imageable_id', 'imageable_type', 'order']);
             $table->timestamps();
         });
     }
