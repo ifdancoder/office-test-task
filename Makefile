@@ -6,6 +6,7 @@ endif
 perm:
 	sudo usermod -aG www-data $(USERNAME)
 	sudo chown -R $(USERNAME):www-data ./
+	sudo chown -R $(USERNAME):$(USERNAME) ./docker/mysql/db_data
 	sudo chmod -R 775 ./
 project-build: perm
 	docker-compose build --build-arg USERNAME=$(USERNAME)

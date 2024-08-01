@@ -18,7 +18,7 @@ class ProcessExcelFile implements ShouldQueue, ShouldBeUnique
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public $timeout = 600;
+    public $timeout = 2400;
 
     protected $filePath;
 

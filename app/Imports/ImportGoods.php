@@ -15,36 +15,58 @@ class ImportGoods implements OnEachRow
      * @return \Illuminate\Database\Eloquent\Model|null
      */
     private $additionalAttributeHeaders = [];
+    private $columnKeys = [];
+
+    private $imageKeys = [];
+
     public function onRow(Row $row)
     {
         DB::transaction(function () use ($row) {
             $rowIndex = $row->getIndex();
             $row = $row->toArray();
 
-            if ($rowIndex != 1) {
-                if ($row[5] == null) {
+            if ($rowIndex == 1) {
+                for ($i = 0; $i < count($row); $i++) {
+                    if (mb_strpos($row[$i], 'Доп. поле:') !== false) {
+                        if (mb_strpos($row[$i], 'Ссылка на упаковку') !== false) {
+                            $this->imageKeys[0] = $i;
+                        }
+                        elseif (mb_strpos($row[$i], 'Ссылки на фото') !== false) {
+                            $this->imageKeys[1] = $i;
+                        }
+                        else {
+                            $this->additionalAttributeHeaders[$i] = mb_strtolower(str_replace("Доп. поле: ", "", $row[$i]));
+                        }
+                    }
+                    else {
+                        $this->columnKeys[$row[$i]] = $i;
+                    }
+                }
+            } 
+            elseif ($rowIndex != 1) {
+                if ($row[$this->columnKeys['Внешний код']] == null) {
                     return;
                 }
 
                 $good = Good::updateOrCreate(
-                    ['external_code' => $row[5]],
+                    ['external_code' => $row[$this->columnKeys['Внешний код']]],
                     [
-                        'name' => $row[4],
-                        'description' => $row[17],
-                        'price' => floatval(str_replace(",", ".", $row[8])),
-                        'discount' => floatval(str_replace(",", ".", $row[8])) - floatval(str_replace(",", ".", $row[20])),
+                        'name' => $row[$this->columnKeys['Наименование']],
+                        'description' => $row[$this->columnKeys['Описание']],
+                        'price' => floatval(str_replace(",", ".", $row[$this->columnKeys['Цена: Цена продажи']])),
+                        'discount' => floatval(str_replace(",", ".", $row[$this->columnKeys['Цена: Цена продажи']])) - floatval(str_replace(",", ".", $row[$this->columnKeys['Минимальная цена']])),
                     ]
                 );
-
-                if ($row[36] != null) {
-                    $good->storeImageByUrl($row[36], 1);
+                
+                if ($row[$this->imageKeys[0]] != null) {
+                    $good->storeImageByUrl($row[$this->imageKeys[0]], 1);
                 }
                 else {
                     $good->deleteImageByOrder(1);
                 }
         
-                if ($row[37] != null) {
-                    $links = explode(', ', $row[37]);
+                if ($row[$this->imageKeys[1]] != null) {
+                    $links = explode(', ', $row[$this->imageKeys[1]]);
                     foreach($links as $key => $link) {
                         $good->storeImageByUrl($link, $key + 2);
                     }
@@ -56,31 +78,15 @@ class ImportGoods implements OnEachRow
                         }
                     }
                 }
-            }
-
-            if ($rowIndex == 1) {
-                for ($i = 31; $i < count($row); $i++) {
-                    if ($i == 36 || $i == 37) {
-                        continue;
-                    }
-
-                    $this->additionalAttributeHeaders[$i] = mb_strtolower(str_replace("Доп. поле: ", "", $row[$i]));
-                }
-            } else {
-                for ($i = 31; $i < count($row); $i++) {
-                    if ($i == 36 || $i == 37) {
-                        continue;
-                    }
-                    $key = $this->additionalAttributeHeaders[$i];
-
-                    if ($row[$i] != null) {
+                foreach($this->additionalAttributeHeaders as $key => $value) {
+                    if ($row[$key] != null) {
                         $good->attributes()->updateOrCreate(
-                            ['good_id' => $good->id, 'key' => $key],
-                            ['value' => $row[$i]]
+                            ['good_id' => $good->id, 'key' => $value],
+                            ['value' => $row[$key]]
                         );
                     }
                     else {
-                        $attribute = $good->attributes()->where('key', $key);
+                        $attribute = $good->attributes()->where('key', $value);
 
                         if ($attribute->exists()) {
                             $attribute->delete();
