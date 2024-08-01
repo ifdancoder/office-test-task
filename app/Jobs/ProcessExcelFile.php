@@ -10,8 +10,11 @@ use Illuminate\Queue\SerializesModels;
 
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\ImportGoods;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
+use Illuminate\Contracts\Cache\Repository;
+use Illuminate\Support\Facades\Cache;
 
-class ProcessExcelFile implements ShouldQueue
+class ProcessExcelFile implements ShouldQueue, ShouldBeUnique
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -27,6 +30,10 @@ class ProcessExcelFile implements ShouldQueue
         $this->filePath = $filePath;
     }
 
+    public function uniqueVia(): Repository
+    {
+        return Cache::driver('redis');
+    }
 
     /**
      * Execute the job.

@@ -5,8 +5,14 @@ namespace App\Services;
 use App\Jobs\ProcessExcelFile;
 use App\Models\Good;
 
+use App\Helpers\DFileHelper;
+use Illuminate\Support\Facades\Storage;
+use App\Traits\FileGenTrait;
+
 class GoodService
 {
+    use FileGenTrait;
+
     public function get($id)
     {
         $good = Good::where('id', $id);
@@ -26,9 +32,12 @@ class GoodService
     {
         $file = $data['file'];
 
-        $fileName = $file->getClientOriginalName();
-        $filePath = $file->storeAs('public/files', $fileName);
+        $extension = $file->getClientOriginalExtension();
+        
+        $uniqueFilename = $this->getRandomFileName(Storage::path('public/files'), $extension);
 
-        ProcessExcelFile::dispatch($filePath)->withoutOverlapping();
+        $filePath = $file->storeAs('public/files', $uniqueFilename . '.' . $extension);
+
+        ProcessExcelFile::dispatch($filePath);
     }
 }
