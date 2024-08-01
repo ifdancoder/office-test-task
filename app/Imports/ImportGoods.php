@@ -15,7 +15,6 @@ class ImportGoods implements OnEachRow
      * @return \Illuminate\Database\Eloquent\Model|null
      */
     private $additionalAttributeHeaders = [];
-
     public function onRow(Row $row)
     {
         DB::transaction(function () use ($row) {

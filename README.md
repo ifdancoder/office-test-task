@@ -16,4 +16,4 @@
 ## Чтобы поднять контейнеры Docker для работы API (в системе нужен docker и docker-compose), нужно:
 - Зайти в папку проекта
 - Иметь права в папке проекта (пользователь и группа www-data) `make perm` (Эта команда также включает добавления пользователя в группу www-data, потому без sudo не выполнится)
-- Прописать `make project-up` (включает `make perm` и `make project-build`)
+- В Makefile представлены команды: `perm`, `project-build`, `project-build-up`, `project-up`. Названия говорят сами за себя
