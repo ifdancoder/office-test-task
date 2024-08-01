@@ -23,6 +23,10 @@ class ImportGoods implements OnEachRow
             $row = $row->toArray();
 
             if ($rowIndex != 1) {
+                if ($row[5] == null) {
+                    return;
+                }
+
                 $good = Good::updateOrCreate(
                     ['external_code' => $row[5]],
                     [

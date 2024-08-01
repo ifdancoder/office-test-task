@@ -1,9 +1,15 @@
-USERNAME := $(SUDO_USER)
+USERNAME := $(shell whoami)
+
+ifeq ($(USERNAME),root)
+    USERNAME := $(shell sudo -u $(SUDO_USER) whoami)
+endif
 perm:
-	sudo usermod -a -G www-data $(USERNAME)
-	chown -R $(USERNAME):www-data ./
-	chmod -R 775 ./
+	sudo usermod -aG www-data $(USERNAME)
+	sudo chown -R $(USERNAME):www-data ./
+	sudo chmod -R 775 ./
 project-build: perm
 	docker-compose build --build-arg USERNAME=$(USERNAME)
-project-up: perm project-build
+project-build-up: perm project-build
+	docker-compose up -d
+project-up: perm
 	docker-compose up -d

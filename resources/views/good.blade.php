@@ -33,6 +33,7 @@
                             style="display: flex;flex-direction: row;justify-content: center; align-items: center; color: rgb(224, 61, 61)">
                             <h5 style="text-decoration: line-through; margin-right: 5px;">{{ $good->price }} ₽</h5>
                             <h2 style="">{{ $good->getPriceWithDiscount() }} ₽</h2>
+                            <span style="background-color: #00bcd4;color: white;border-radius: 20px;padding: 10px;font-weight: bold;transform: rotate(25deg);">{{ (int) ($good->discount / $good->price * 100) }}%</span>
                         </div>
                     @else
                         <h5>{{ $good->price }} ₽</h5>
